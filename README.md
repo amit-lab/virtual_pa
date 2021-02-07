@@ -1,1 +1,4 @@
-# virtual_pa
+# virtual Personal Assistant
+
+Requirements :
+tk, 
