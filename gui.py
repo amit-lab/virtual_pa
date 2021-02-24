@@ -1,6 +1,9 @@
 from tkinter import *
+from tkinter import messagebox
 import user_data
 from weather_data import WeatherData
+from price_tracker import PriceTracker
+import os
 
 
 class Gui(Tk):
@@ -9,14 +12,14 @@ class Gui(Tk):
         self.title("Virtual Personal Assistant")
         self.config(padx=50, pady=50)
         self.main_page()
-
         self.selected_site = IntVar()
         self.send_sms = IntVar()
 
+        # Objects
 
         # to give padding to all widgets in window
-        for child in self.winfo_children():
-            child.grid_configure(padx=10, pady=10)
+        self.padding_adder(self)
+
         self.mainloop()
 
     def main_page(self):
@@ -24,27 +27,49 @@ class Gui(Tk):
         msg.grid(column=0, row=0)
 
         # For weather btn
-        weather_btn = Button(text="Weather Info", command=self.weather_page)
+        weather_btn = Button(text="Weather Info",
+                                command=self.weather_page,
+                                bg='brown',fg='white')
         weather_btn.grid(row=1, column=0)
         # For price tracker
-        price_tracker_btn = Button(self, text="Price Tracker", command=self.price_track_page)
+        price_tracker_btn = Button(self,
+                                    text="Price Tracker",
+                                    command=self.price_track_page,
+                                    bg='brown',fg='white')
 
     def weather_page(self):
         print(self.weather_data_obj.get_data())
 
     def price_track_page(self):
         """This methiod creates the window for price tracker for amazon or flipkart"""
-        def runner():
-            #print("sected site: ", self.selected_site.get())
-            #print("send sms : ", self.send_sms.get())
-            #track_win.destroy()
+        def destroy_win():
+            track_win.destroy()
 
+        def store_data():
+            url = url_entry.get()
+            price = price_entry.get()
+            price_tracker.save_url(url, price)
+            track_win.destroy()
+            self.price_track_page()
+
+        def confirm_msg():
+            msg = messagebox.askquestion('Warning', 
+                    'Are you sure you want to chenge url ?', icon='warning')
+            if msg == 'yes':
+                track_win.destroy()
+                change_url()
+
+        def change_url():
+            os.system('rm url.txt')
+            self.price_track_page()
+
+        price_tracker = PriceTracker()
         track_win = Tk()
         track_win.title("Price Tracker")
         track_win.config(padx=50, pady=50)
 
         # if url does not exist already
-        if 5>6:
+        if not price_tracker.status:
             Label(track_win, text="Welcome").grid(row=0, column=0, columnspan=2)
             Label(track_win, text="Enter url bellow : ").grid(row=1, column=0, columnspan=2)
             url_entry = Entry(track_win, width=30)
@@ -58,7 +83,6 @@ class Gui(Tk):
             #                        variable=self.selected_site,
             #                        value=0)
             #flipkart.grid(row=5, column=0)
-#   
             #amazon = Radiobutton(track_win,
             #                        text="Amazon ", 
             #                        variable=self.selected_site, 
@@ -69,23 +93,34 @@ class Gui(Tk):
             #sel_yes.grid(row=7, column=0)
             #sel_no = Radiobutton(track_win, text="No", variable=self.send_sms, value=0)
             #sel_no.grid(row=7, column=1)
-            Button(track_win, text="Done", command=runner).grid(row=8, column=0, columnspan=2)
+            Button(track_win, text="Done", command=store_data).grid(row=8, column=0, columnspan=2)
 
         # if url exist already
         else:
+            data = price_tracker.check_price()
             Label(track_win, text="Product Name ").grid(row=0, column=0, columnspan=2)
-            product_name_label = Label(track_win, text="Unknown")
+            product_name_label = Label(track_win, text=f"{data['product name']}")
             product_name_label.grid(row=1, column=0, columnspan=2)
-            Label(track_win, text="Current Price : ").grid(row=2, column=0)
-            cur_price = Label(track_win, text="Unknown")
-            cur_price.grid(row=2, column=1)
-            Label(track_win, text="Desired Price : ").grid(row=3, column=0)
-            desired_price = Label(track_win, text="Unknown")
-            desired_price.grid(row=3, column=1)
-            Label(track_win, text="Is price low : ").grid(row=4, column=0)
-            is_low = Label(track_win, text="Unknown")
-            is_low.grid(row=4, column=1)
-            Button(track_win, text="Ok").grid(row=5, column=0, columnspan=2)
+            cur_price = Label(track_win,
+                                text=f"Current Price : Rs. {data['current price']}")
+            cur_price.grid(row=2, column=0)
+            des_price = Label(track_win,
+                                text=f"Desired Price : Rs. {data['desired price']}")
+            des_price.grid(row=3, column=0)
+            is_low = Label(track_win,
+                                text=f"Is price low   : {data['price low']}          ")
+            is_low.grid(row=4, column=0)
+            Button(track_win,
+                    text="Ok",
+                    command=destroy_win,
+                    bg='brown',
+                    fg='white').grid(row=5, column=0)
+            Button(track_win,
+                    text="Change url",
+                    bg='brown',fg='white',
+                    command=confirm_msg).grid(row=5, column=1)
+
+        #self.padding_adder(track_win)
 
 
     def data_entry(self):
@@ -104,7 +139,8 @@ class Gui(Tk):
         entry_window = Tk()
         entry_window.title("Entry Window")
         entry_window.config(padx=20, pady=20)
-        Label(entry_window, text="Enter Your api keys and urls here").grid(row=0, column=0, columnspan=3)
+        Label(entry_window,
+                text="Enter Your api keys and urls here").grid(row=0, column=0, columnspan=3)
         Label(entry_window, text="URL").grid(row=1, column=1)
         Label(entry_window, text="API key").grid(row=1, column=2)
 
@@ -121,4 +157,9 @@ class Gui(Tk):
         # to give padding to all widgets in window
         for child in entry_window.winfo_children():
             child.grid_configure(padx=10, pady=10)
+
+    def padding_adder(self, obj):
+        for child in obj.winfo_children():
+            child.grid_configure(padx=10, pady=10)
+
 
