@@ -15,8 +15,6 @@ class Gui(Tk):
         self.selected_site = IntVar()
         self.send_sms = IntVar()
 
-        # Objects
-
         # to give padding to all widgets in window
         self.padding_adder(self)
 
@@ -38,7 +36,72 @@ class Gui(Tk):
                                     bg='brown',fg='white')
 
     def weather_page(self):
-        print(self.weather_data_obj.get_data())
+
+        def destroy_win():
+            weather_win.destroy()
+
+        def store_names():
+            weather_data.save_names(city_entry.get(), country_entry.get())
+            weather_win.destroy()
+            self.weather_page()
+
+        def confirm_msg():
+            msg = messagebox.askquestion('Warning', 
+                    'Are you sure you want to chenge city name ?', icon='warning')
+            if msg == 'yes':
+                weather_win.destroy()
+                change_names()
+
+        def change_names():
+            os.system("rm weather.txt")
+            self.weather_page()
+
+
+        data = None
+        weather_data = WeatherData()
+        weather_win = Tk()
+        weather_win.title("Weather Forcast Information")
+        weather_win.config(padx=30, pady=30)
+
+        if not weather_data.status:
+            Label(weather_win, text="Welcome").grid(row=0, column=0, columnspan=2)
+            Label(weather_win,
+                    text="Enter your location detail here").grid(row=1, column=0, columnspan=2)
+            Label(weather_win,
+                    text="City name : ").grid(row=2, column=0)
+            city_entry = Entry(weather_win, width=20)
+            city_entry.grid(row=2, column=1)
+            Label(weather_win, text="Country name : ").grid(row=3, column=0)
+            country_entry = Entry(weather_win, width=20)
+            country_entry.grid(row=3, column=1)
+            Button(weather_win, 
+                    text="Done", 
+                    command=store_names).grid(row=8, column=0, columnspan=2)
+
+        else:
+            data = weather_data.get_current_data()
+            will_rain = weather_data.rain_alert()
+            Label(weather_win,
+                    text="Current Weather Forcast").grid(row=0, column=0, columnspan=2)
+            Label(weather_win,
+                    text=f"Temperature   :   ").grid(row=1, column=0)
+            Label(weather_win, text=f"{data['temp']} C").grid(row=1, column=1)
+            Label(weather_win,
+                    text=f"Wind              : ").grid(row=2, column=0)
+            Label(weather_win, text=f"{data['wind speed']['speed']}  m/s").grid(row=2, column=1)
+            Label(weather_win,
+                    text=f"Status            :").grid(row=3, column=0)
+            Label(weather_win, text=f"{data['status']}").grid(row=3, column=1)
+            Button(weather_win,
+                    text="Ok",
+                    command=destroy_win,
+                    bg='brown',
+                    fg='white').grid(row=4, column=0)
+            Button(weather_win,
+                    text="Change city name",
+                    bg='brown',fg='white',
+                    command=confirm_msg).grid(row=4, column=1)
+
 
     def price_track_page(self):
         """This methiod creates the window for price tracker for amazon or flipkart"""

@@ -37,19 +37,17 @@ class PriceTracker:
 
     def get_url(self):
         try:
-            with open('url.txt', 'r') as f:
+            with open('data/url.txt', 'r') as f:
                 return f.readlines()
         except FileNotFoundError:
             return False
 
     def save_url(self, url, price):
-        with open('url.txt', 'w') as f:
+        with open('data/url.txt', 'w') as f:
             f.write(url+'\n'+str(price))
 
     def send_sms(self, data):
-        text = f"""Product name: {data['product name']}\n\
-                Current price: {data['current price']}\n\
-                today you will save some money. So go buy it."""
+        text = f"""\nProduct name: {data['product name']}\nCurrent price: {data['current price']}\ntoday you will save some money. So go buy it."""
         SendSms(text)
         
 
