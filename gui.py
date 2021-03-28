@@ -11,6 +11,7 @@ class Gui(Tk):
         super().__init__()
         self.title("Virtual Personal Assistant")
         self.config(padx=50, pady=50)
+        self.resizable(0, 0)
         self.main_page()
         self.selected_site = IntVar()
         self.send_sms = IntVar()
@@ -62,6 +63,7 @@ class Gui(Tk):
         weather_win = Tk()
         weather_win.title("Weather Forcast Information")
         weather_win.config(padx=30, pady=30)
+        weather_win.resizable(0, 0)
 
         if not weather_data.status:
             Label(weather_win, text="Welcome").grid(row=0, column=0, columnspan=2)
@@ -104,14 +106,16 @@ class Gui(Tk):
 
 
     def price_track_page(self):
-        """This methiod creates the window for price tracker for amazon or flipkart"""
         def destroy_win():
             track_win.destroy()
 
         def store_data():
-            url = url_entry.get()
+            url1 = flipkart_url.get()
+            url2 = amazon_url.get()
+            #url3 = snapdeal_url.get()
             price = price_entry.get()
-            price_tracker.save_url(url, price)
+            data = [url1, url2, price]
+            price_tracker.save_url(data)
             track_win.destroy()
             self.price_track_page()
 
@@ -123,68 +127,71 @@ class Gui(Tk):
                 change_url()
 
         def change_url():
-            os.system('rm url.txt')
+            os.system('rm data/url.txt')
+            track_win.destroy()
             self.price_track_page()
 
         price_tracker = PriceTracker()
         track_win = Tk()
         track_win.title("Price Tracker")
-        track_win.config(padx=50, pady=50)
+        track_win.config(padx=10, pady=10)
+        track_win.resizable(0, 0)
+        #bg = PhotoImage(master=track_win, file="./data/card_back.png")
+        #Label(track_win, image=bg).place(x=0, y=0)
 
         # if url does not exist already
         if not price_tracker.status:
             Label(track_win, text="Welcome").grid(row=0, column=0, columnspan=2)
-            Label(track_win, text="Enter url bellow : ").grid(row=1, column=0, columnspan=2)
-            url_entry = Entry(track_win, width=30)
-            url_entry.grid(row=2, column=0, columnspan=2)
-            Label(track_win, text="Desired Price").grid(row=3, column=0, columnspan=2)
+            Label(track_win, text="Enter url from Flipkart bellow : ").grid(row=1, column=0, columnspan=2)
+            Label(track_win, text="Enter url from Amazon bellow : ").grid(row=3, column=0, columnspan=2)
+            #Label(track_win, text="Enter url from Snapdeal bellow : ").grid(row=5, column=0, columnspan=2)
+            flipkart_url = Entry(track_win, width=30)
+            amazon_url = Entry(track_win, width=30)
+            #snapdeal_url = Entry(track_win, width=30)
+            flipkart_url.grid(row=2, column=0, columnspan=2)
+            amazon_url.grid(row=4, column=0, columnspan=2)
+            #snapdeal_url.grid(row=6, column=0, columnspan=2)
+            Label(track_win, text="Desired Price").grid(row=7, column=0, columnspan=2)
             price_entry = Entry(track_win, width=10)
-            price_entry.grid(row=4, column=0, columnspan=2)
-            #Label(track_win, text="Which website is this url from:").grid(row=4, column=0, columnspan=2)
-            #flipkart = Radiobutton(track_win,
-            #                        text="Flipkart ",
-            #                        variable=self.selected_site,
-            #                        value=0)
-            #flipkart.grid(row=5, column=0)
-            #amazon = Radiobutton(track_win,
-            #                        text="Amazon ", 
-            #                        variable=self.selected_site, 
-            #                        value=1)
-            #amazon.grid(row=5, column=1)
-            #Label(track_win, text="Should we notify you through sms ?").grid(row=6, column=0, columnspan=2)
-            #sel_yes = Radiobutton(track_win, text="Yes", variable=self.send_sms, value=1)
-            #sel_yes.grid(row=7, column=0)
-            #sel_no = Radiobutton(track_win, text="No", variable=self.send_sms, value=0)
-            #sel_no.grid(row=7, column=1)
-            Button(track_win, text="Done", command=store_data).grid(row=8, column=0, columnspan=2)
-
+            price_entry.grid(row=8, column=0, columnspan=2)
+            Button(track_win, text="Done", command=store_data).grid(row=9, column=0)
+            Button(track_win, 
+                    text="Cancel", 
+                    command=destroy_win).grid(row=9, column=1)
+#
         # if url exist already
         else:
-            data = price_tracker.check_price()
-            Label(track_win, text="Product Name ").grid(row=0, column=0, columnspan=2)
-            product_name_label = Label(track_win, text=f"{data['product name']}")
-            product_name_label.grid(row=1, column=0, columnspan=2)
-            cur_price = Label(track_win,
-                                text=f"Current Price : Rs. {data['current price']}")
-            cur_price.grid(row=2, column=0)
-            des_price = Label(track_win,
-                                text=f"Desired Price : Rs. {data['desired price']}")
-            des_price.grid(row=3, column=0)
-            is_low = Label(track_win,
-                                text=f"Is price low   : {data['price low']}          ")
-            is_low.grid(row=4, column=0)
-            Button(track_win,
-                    text="Ok",
-                    command=destroy_win,
-                    bg='brown',
-                    fg='white').grid(row=5, column=0)
-            Button(track_win,
-                    text="Change url",
-                    bg='brown',fg='white',
-                    command=confirm_msg).grid(row=5, column=1)
-
-        #self.padding_adder(track_win)
-
+            data = price_tracker.get_data()
+            # Creating canvas for bg image
+            #bg_img = PhotoImage(master=track_win, file="./data/price_track.png")
+            #bg_canvas = Canvas(master=track_win, height=500, width=1000, highlightthickness=0)
+            #bg = bg_canvas.create_image(500, 263)
+            #bg_canvas.itemconfig(bg, image=bg_img)
+            #language = bg_canvas.create_text(400, 150, text="English", fill="white", font=("Ariel", 40, "italic"))
+            #word = bg_canvas.create_text(400, 263, text="word", fill="black", font=("Ariel", 60, "bold"))
+            ##bg_canvas.grid(row=0, column=0, columnspan=2, rowspan=2)
+            #bg_canvas.grid(row=0, column=0, columnspan=5, rowspan=5)
+            # Labels:
+            # for amazon
+            Label(track_win, text="PRICE TRACKER", fg='green', pady=10).grid(row=0, column=0, columnspan=4)
+            Label(track_win, text="Amazon", padx=150).grid(row=1, column=0)
+            Label(track_win, text=f"Product Name : {data['amazon'][0]}").grid(row=2, column=0)
+            Label(track_win, text=f"Current Price: {data['amazon'][1]}").grid(row=3, column=0)
+            # for flipkart
+            Label(track_win, text="Flipkart", padx=150).grid(row=1, column=1)
+            Label(track_win, text=f"Product Name : {data['flipkart'][0]}").grid(row=2, column=1)
+            Label(track_win, text=f"Current Price: {data['flipkart'][1]}").grid(row=3, column=1)
+            # for snapdeal
+            #Label(track_win, text="Snapdeal").grid(row=1, column=2)
+            #Label(track_win, text="Product Name : ").grid(row=2, column=2)
+            #Label(track_win, text="Current Price: ").grid(row=3, column=2)
+            # for extra info
+            Label(track_win, text=f"Desired Price: {data['desired price']}").grid(row=4, column=0, columnspan=3)
+            Label(track_win, text=f"Lowest Price website : {data['low price website']}").grid(row=5, column=0, columnspan=3)
+            Label(track_win, 
+                    text=f"Is price lower than desired price : {data['is low']}").grid(row=6, column=0, columnspan=3)
+            Button(track_win, text='Ok', command=destroy_win).grid(row=7, column=0, columnspan=3)
+            Button(track_win, text='Change urls', command=change_url).grid(row=8, column=0, columnspan=3)
 
     def data_entry(self):
         """This function creates the window where you can enter your api keys and urls"""
@@ -202,6 +209,7 @@ class Gui(Tk):
         entry_window = Tk()
         entry_window.title("Entry Window")
         entry_window.config(padx=20, pady=20)
+        entry_window.resizable(0, 0)
         Label(entry_window,
                 text="Enter Your api keys and urls here").grid(row=0, column=0, columnspan=3)
         Label(entry_window, text="URL").grid(row=1, column=1)
