@@ -91,6 +91,8 @@ class PriceTracker:
         price = soup.find("span", {"id": "priceblock_dealprice"})
         if price == None:
             price = soup.find("span", {"id": "priceblock_ourprice"})
+        if price == None:
+            return ['Not Found', 0]
         product_name = soup.find("span", 
                                  {"id": "productTitle"}).text.replace('\n', '')
         #Purifying filtered data and converting into desired format

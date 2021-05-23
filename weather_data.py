@@ -54,7 +54,7 @@ class WeatherData:
 
     def rain_alert(self):
         will_rain = False
-        for hour in range(12):
+        for hour in range(7):
             for current in self.weather_data[hour]['weather']:
                 # print(current['id'])
                 if current['id'] < 700:
@@ -71,7 +71,7 @@ class WeatherData:
 
     def check_names(self):
         try:
-            with open('data/weather.txt', 'r') as f:
+            with open('data/weather.txt', 'r') as _:
                 return True
         except FileNotFoundError:
             return False
